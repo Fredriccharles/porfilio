@@ -219,30 +219,57 @@
     form.reset();
   });
 
-  /* ---------- GitHub repos (bonus) ---------- */
-  const repoList = document.getElementById('repo-list');
-  const GITHUB_USER = 'fredcaj';
+/* ---------- GitHub Repositories ---------- */
 
-  fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=4`)
-    .then(res => {
-      if (!res.ok) throw new Error('GitHub request failed');
-      return res.json();
-    })
-    .then(repos => {
-      if (!Array.isArray(repos) || repos.length === 0) {
-        repoList.innerHTML = '<li class="repo-empty">No public repositories found yet.</li>';
-        return;
-      }
-      repoList.innerHTML = repos.map(repo => `
-        <li class="repo-card">
-          <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">${repo.name}</a>
-          <p>${repo.description ? repo.description : 'No description provided.'}</p>
-        </li>
-      `).join('');
-    })
-    .catch(() => {
-      repoList.innerHTML = '<li class="repo-empty">Repositories will appear here once GitHub is reachable.</li>';
-    });
+const repoList = document.getElementById("repo-list");
+const GITHUB_USER = "Fredriccharles";
+
+async function loadRepositories() {
+    try {
+        const response = await fetch(
+            `https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=4`
+        );
+
+        if (!response.ok) {
+            throw new Error("GitHub request failed");
+        }
+
+        const repos = await response.json();
+
+        if (repos.length === 0) {
+            repoList.innerHTML =
+                '<li class="repo-empty">No public repositories found.</li>';
+            return;
+        }
+
+        repoList.innerHTML = repos
+            .map(
+                (repo) => `
+                <li class="repo-card">
+                    <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer">
+                        <h4>${repo.name}</h4>
+                    </a>
+
+                    <p>${repo.description || "No description provided."}</p>
+
+                    <div class="repo-meta">
+                        <span>💻 ${repo.language || "Unknown"}</span>
+                        <span>⭐ ${repo.stargazers_count}</span>
+                        <span>🍴 ${repo.forks_count}</span>
+                    </div>
+                </li>
+            `
+            )
+            .join("");
+    } catch (error) {
+        console.error(error);
+        repoList.innerHTML =
+            '<li class="repo-empty">Unable to load repositories.</li>';
+    }
+}
+
+loadRepositories();
+
 
   /* ---------- Footer year ---------- */
   document.getElementById('year').textContent = new Date().getFullYear();
